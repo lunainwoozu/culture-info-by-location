@@ -24,3 +24,6 @@ playwright-report/
 
 # Claude Code memory
 memory/
+
+# API 가이드 원본 문서 (공공데이터포털에서 제공, CLAUDE.md에 요약 수록)
+docs/*.doc
