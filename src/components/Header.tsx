@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { MdTheaters } from 'react-icons/md'
 import SearchBar from './SearchBar'
 import DiscountToggle from './DiscountToggle'
+import { useAuthStore } from '@/store/authStore'
 
 interface Props {
   discountOnly?: boolean
@@ -12,6 +13,7 @@ interface Props {
 
 export default function Header({ discountOnly = false, onToggleDiscount }: Props) {
   const router = useRouter()
+  const { user, logout } = useAuthStore()
 
   const handleSearch = (keyword: string) => {
     router.push(`/search?q=${encodeURIComponent(keyword)}`)
@@ -41,6 +43,27 @@ export default function Header({ discountOnly = false, onToggleDiscount }: Props
             <DiscountToggle checked={discountOnly} onChange={onToggleDiscount} />
           </div>
         )}
+
+        {/* 로그인/로그아웃 */}
+        <div className="shrink-0">
+          {user ? (
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              로그아웃
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push('/login')}
+              className="rounded-lg bg-teal-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-600 transition-colors"
+            >
+              로그인
+            </button>
+          )}
+        </div>
       </div>
     </header>
   )

@@ -4,6 +4,42 @@
 
 ---
 
+## 2026-05-24 (로그인 + 회원가입)
+
+### localStorage 기반 인증 구현
+
+- `src/store/authStore.ts` — Zustand 유저 세션 상태 (sessionStorage 영속화)
+- `src/app/login/page.tsx` — 로그인 폼 (Zod 검증, 이메일·비밀번호)
+- `src/app/signup/page.tsx` — 회원가입 폼 (Zod 검증, 비밀번호 확인, 중복 이메일 차단)
+- `src/components/Header.tsx` — 로그인/로그아웃 버튼 반영
+- `package.json` — `zod` 의존성 추가, `"type": "module"` 제거 (Next.js 호환 문제)
+- `next.config.ts` — Turbopack `root` 설정 추가
+
+---
+
+## 2026-05-24 (Next.js 마이그레이션 + Vercel 재배포)
+
+### Vite → Next.js 16 App Router 전환
+
+- `package.json`: `next` 추가, `vite`·`vite-plugin-pwa`·`react-router-dom`·`@ducanh2912/next-pwa` 제거, 스크립트 `next dev/build/start`로 변경
+- `tsconfig.json`: 단일 파일로 통합 (tsconfig.app.json, tsconfig.node.json 제거), `moduleResolution: bundler`, `jsx: react-jsx`
+- `next.config.ts`: 신규 (최소 설정)
+- `postcss.config.mjs`: `@tailwindcss/postcss` 플러그인으로 변경
+- `vercel.json`: `{}` (Next.js가 라우팅 네이티브 처리)
+- `src/app/layout.tsx`: 루트 레이아웃 (Metadata, Viewport export)
+- `src/app/page.tsx`: 홈 페이지 (`'use client'`)
+- `src/app/manifest.ts`: PWA 매니페스트 (Next.js 네이티브)
+- `src/app/detail/[id]/page.tsx`: Detail 페이지 — 항상 API 직접 호출 (stateEvent 패턴 제거)
+- `src/app/search/page.tsx`: Suspense 경계 서버 컴포넌트
+- `src/app/search/SearchContent.tsx`: `useSearchParams` 클라이언트 컴포넌트
+- `src/components/Header.tsx`: `useNavigate` → `useRouter` (next/navigation)
+- `src/components/EventCard.tsx`: `useNavigate` → `useRouter`, state 전달 제거
+- 환경변수: `VITE_CULTURE_API_KEY` → `NEXT_PUBLIC_CULTURE_API_KEY`, `import.meta.env` → `process.env`
+- 삭제: `vite.config.ts`, `index.html`, `src/router.tsx`, `src/main.tsx`, `src/vite-env.d.ts`, `src/pages/`
+- Vercel Framework Preset "Next.js" 변경 후 재배포 완료
+
+---
+
 ## 2026-05-24 (배포 및 버그 수정)
 
 ### Vercel 배포 + 라우팅 수정 + 타입 정리 + Detail 직접 접근 버그 수정
