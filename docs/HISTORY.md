@@ -83,7 +83,7 @@
 
 ## 2026-05-18 (버그 수정: 중복 카드 + HTML 엔티티)
 
-참조: `docs/07_BUGFIX_SPEC.md`
+참조: `docs/BUGFIX.md`
 
 - `src/api/cultureInfo.ts`
   - `decodeEntities` 함수 추가, `parseItems` `t()` 헬퍼에 적용 — API XML 이중 인코딩된 HTML 엔티티(`&lt;` 등) 2차 디코딩으로 제목 등 표시 정상화
@@ -123,13 +123,13 @@
 
 - `src/pages/SearchPage.tsx`: 로컬 discountOnly state + mobile 필터 바 + Header props 연결
 - 위치 허용 여부와 무관하게 검색 결과에서도 할인 필터 사용 가능
-- 참조: `docs/04_BUGFIX_SPEC.md`
+- 참조: `docs/BUGFIX.md`
 
 ### BUG-02: 검색 결과 상세 페이지 "존재하지 않는 공연" 오류 수정
 
 - `src/components/EventCard.tsx`: navigate 시 `{ state: { event } }` 전달
 - `src/pages/Detail.tsx`: location.state?.event 우선 사용, URL 직접 접근 시 API fallback
-- 참조: `docs/04_BUGFIX_SPEC.md`
+- 참조: `docs/BUGFIX.md`
 
 ### 키워드 검색 (위치 없이 지역명/공연명으로 검색)
 
