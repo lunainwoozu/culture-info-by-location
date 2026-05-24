@@ -1,5 +1,7 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { MdImageNotSupported } from 'react-icons/md'
 import type { Event } from '../types/api'
 import { fetchCultureInfoDetail } from '../api/cultureInfo'
@@ -17,7 +19,7 @@ function formatDateRange(start: string, end: string): string {
 }
 
 export default function EventCard({ event }: Props) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [price, setPrice] = useState(event.price)
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function EventCard({ event }: Props) {
 
   return (
     <article
-      onClick={() => navigate(`/detail/${event.id}`, { state: { event } })}
+      onClick={() => router.push(`/detail/${event.id}`)}
       className="flex cursor-pointer gap-0 rounded-xl border border-gray-100 bg-white overflow-hidden hover:shadow-md transition-shadow"
     >
       {/* 썸네일 */}

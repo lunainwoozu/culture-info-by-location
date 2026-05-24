@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom'
+'use client'
+
+import { useRouter } from 'next/navigation'
 import { MdTheaters } from 'react-icons/md'
 import SearchBar from './SearchBar'
 import DiscountToggle from './DiscountToggle'
@@ -9,10 +11,10 @@ interface Props {
 }
 
 export default function Header({ discountOnly = false, onToggleDiscount }: Props) {
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleSearch = (keyword: string) => {
-    navigate(`/search?q=${encodeURIComponent(keyword)}`)
+    router.push(`/search?q=${encodeURIComponent(keyword)}`)
   }
 
   return (
@@ -21,7 +23,7 @@ export default function Header({ discountOnly = false, onToggleDiscount }: Props
         {/* 로고 */}
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => router.push('/')}
           className="flex shrink-0 items-center gap-1.5 text-teal-500 hover:text-teal-600 transition-colors"
         >
           <MdTheaters size={24} />

@@ -1,16 +1,18 @@
+'use client'
+
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, useRouter } from 'next/navigation'
 import {
   MdArrowBack, MdCalendarToday, MdPlace, MdTheaters,
   MdOpenInNew, MdImageNotSupported, MdLocalOffer, MdDirectionsWalk,
 } from 'react-icons/md'
-import { fetchCultureInfoDetail } from '../api/cultureInfo'
-import { fetchTicketDiscounts } from '../api/cultureTicket'
-import DiscountBadge from '../components/DiscountBadge'
-import FreeBadge from '../components/FreeBadge'
-import DetailSkeleton from '../components/DetailSkeleton'
-import { formatDistance, formatTransitTime } from '../utils/distance'
-import type { Event, TicketDiscountItem } from '../types/api'
+import { fetchCultureInfoDetail } from '@/api/cultureInfo'
+import { fetchTicketDiscounts } from '@/api/cultureTicket'
+import DiscountBadge from '@/components/DiscountBadge'
+import FreeBadge from '@/components/FreeBadge'
+import DetailSkeleton from '@/components/DetailSkeleton'
+import { formatDistance, formatTransitTime } from '@/utils/distance'
+import type { Event, TicketDiscountItem } from '@/types/api'
 
 function toIsoDate(raw: string): string {
   if (raw.length === 8 && !raw.includes('-')) {
@@ -29,12 +31,10 @@ function findDiscount(title: string, place: string, tickets: TicketDiscountItem[
   )
 }
 
-export default function Detail() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  const stateEvent = (location.state as { event?: Event } | null)?.event
+export default function DetailPage() {
+  const params = useParams()
+  const id = params.id as string
+  const router = useRouter()
 
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
@@ -48,41 +48,32 @@ export default function Detail() {
       setNotFound(false)
 
       try {
-        if (stateEvent) {
-          const detail = await fetchCultureInfoDetail(id)
-          setEvent({
-            ...stateEvent,
-            url: detail?.url ?? '',
-            price: detail?.price ?? '',
-          })
-        } else {
-          const [detail, tickets] = await Promise.all([
-            fetchCultureInfoDetail(id),
-            fetchTicketDiscounts(),
-          ])
+        const [detail, tickets] = await Promise.all([
+          fetchCultureInfoDetail(id),
+          fetchTicketDiscounts(),
+        ])
 
-          if (!detail) { setNotFound(true); return }
+        if (!detail) { setNotFound(true); return }
 
-          const discount = findDiscount(detail.title, detail.place, tickets)
-          setEvent({
-            id: detail.seq,
-            title: detail.title,
-            place: detail.place,
-            startDate: toIsoDate(detail.startDate),
-            endDate: toIsoDate(detail.endDate),
-            realmName: detail.realmName,
-            sigungu: detail.sigungu,
-            thumbnail: detail.thumbnail,
-            lat: detail.gpsY ? parseFloat(detail.gpsY) : null,
-            lng: detail.gpsX ? parseFloat(detail.gpsX) : null,
-            distanceKm: null,
-            url: detail.url ?? '',
-            price: detail.price ?? '',
-            discount: discount
-              ? { discountRate: Number(discount.discountRate), price: discount.price, img: discount.img }
-              : null,
-          })
-        }
+        const discount = findDiscount(detail.title, detail.place, tickets)
+        setEvent({
+          id: detail.seq,
+          title: detail.title,
+          place: detail.place,
+          startDate: toIsoDate(detail.startDate),
+          endDate: toIsoDate(detail.endDate),
+          realmName: detail.realmName,
+          sigungu: detail.sigungu,
+          thumbnail: detail.thumbnail,
+          lat: detail.gpsY ? parseFloat(detail.gpsY) : null,
+          lng: detail.gpsX ? parseFloat(detail.gpsX) : null,
+          distanceKm: null,
+          url: detail.url ?? '',
+          price: detail.price ?? '',
+          discount: discount
+            ? { discountRate: Number(discount.discountRate), price: discount.price, img: discount.img }
+            : null,
+        })
       } catch {
         setNotFound(true)
       } finally {
@@ -91,7 +82,7 @@ export default function Detail() {
     }
 
     run()
-  }, [id]) // stateEvent는 동일 페이지 내에서 변경되지 않으므로 deps 제외
+  }, [id])
 
   if (loading) return <DetailSkeleton />
 
@@ -101,7 +92,7 @@ export default function Detail() {
         <p className="text-gray-500">존재하지 않는 공연입니다.</p>
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => router.push('/')}
           className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-medium text-white hover:bg-teal-600 transition-colors"
         >
           홈으로
@@ -135,7 +126,7 @@ export default function Detail() {
         <div className="mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8 py-3">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => router.back()}
             className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
             <MdArrowBack size={20} />
@@ -147,7 +138,6 @@ export default function Detail() {
       <div className="mx-auto max-w-screen-lg lg:px-6 lg:py-8">
         <div className="bg-white lg:rounded-2xl lg:shadow-sm overflow-hidden">
           <div className="lg:flex lg:items-stretch">
-
             <div className="w-full lg:w-2/5 shrink-0 bg-gray-100">
               {event.thumbnail ? (
                 <img
@@ -220,16 +210,13 @@ export default function Detail() {
                 aria-disabled={!hasUrl}
                 className={[
                   'flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold text-white transition-colors',
-                  hasUrl
-                    ? 'bg-teal-500 hover:bg-teal-600'
-                    : 'bg-gray-300 pointer-events-none opacity-50',
+                  hasUrl ? 'bg-teal-500 hover:bg-teal-600' : 'bg-gray-300 pointer-events-none opacity-50',
                 ].join(' ')}
               >
                 상세 정보 이동
                 <MdOpenInNew size={16} />
               </a>
             </div>
-
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
+'use client'
+
 interface Props {
   total: number
   page: number

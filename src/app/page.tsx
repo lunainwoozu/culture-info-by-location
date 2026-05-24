@@ -1,17 +1,19 @@
-import { useState } from "react";
-import { MdLocationOff, MdSearch } from "react-icons/md";
-import Header from "../components/Header";
-import DiscountToggle from "../components/DiscountToggle";
-import EventCard from "../components/EventCard";
-import SkeletonCard from "../components/SkeletonCard";
-import ErrorMessage from "../components/ErrorMessage";
-import Pagination from "../components/Pagination";
-import { useGeolocation } from "../hooks/useGeolocation";
-import { useEvents } from "../hooks/useEvents";
-import { useLocationStore } from "../store/locationStore";
-import { useFilterStore } from "../store/filterStore";
+'use client'
 
-const PAGE_SIZE = 20;
+import { useState } from 'react'
+import { MdLocationOff, MdSearch } from 'react-icons/md'
+import Header from '@/components/Header'
+import DiscountToggle from '@/components/DiscountToggle'
+import EventCard from '@/components/EventCard'
+import SkeletonCard from '@/components/SkeletonCard'
+import ErrorMessage from '@/components/ErrorMessage'
+import Pagination from '@/components/Pagination'
+import { useGeolocation } from '@/hooks/useGeolocation'
+import { useEvents } from '@/hooks/useEvents'
+import { useLocationStore } from '@/store/locationStore'
+import { useFilterStore } from '@/store/filterStore'
+
+const PAGE_SIZE = 20
 
 function LocationErrorPrompt() {
   return (
@@ -31,28 +33,26 @@ function LocationErrorPrompt() {
         </p>
       </div>
     </div>
-  );
+  )
 }
 
 export default function Home() {
-  useGeolocation();
+  useGeolocation()
 
-  const { loading: locLoading, error: locError } = useLocationStore();
-  const { discountOnly, toggleDiscountOnly } = useFilterStore();
-  const { events, loading: evLoading, error: evError, refetch } = useEvents();
-  const [page, setPage] = useState(1);
+  const { loading: locLoading, error: locError } = useLocationStore()
+  const { discountOnly, toggleDiscountOnly } = useFilterStore()
+  const { events, loading: evLoading, error: evError, refetch } = useEvents()
+  const [page, setPage] = useState(1)
 
-  const filtered = discountOnly
-    ? events.filter((e) => e.discount !== null)
-    : events;
-  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const filtered = discountOnly ? events.filter((e) => e.discount !== null) : events
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const handleToggle = () => {
-    toggleDiscountOnly();
-    setPage(1);
-  };
+    toggleDiscountOnly()
+    setPage(1)
+  }
 
-  const isLoading = locLoading || evLoading;
+  const isLoading = locLoading || evLoading
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,12 +75,8 @@ export default function Home() {
               <p className="text-sm text-gray-500">
                 내 위치에서 10km 이내 공연·전시 {filtered.length}건
               </p>
-
               <div className="lg:hidden bg-gray-50">
-                <DiscountToggle
-                  checked={discountOnly}
-                  onChange={handleToggle}
-                />
+                <DiscountToggle checked={discountOnly} onChange={handleToggle} />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -90,9 +86,7 @@ export default function Home() {
             </div>
             {filtered.length === 0 && (
               <p className="py-16 text-center text-sm text-gray-400">
-                {discountOnly
-                  ? "할인 중인 공연·전시가 없습니다."
-                  : "주변 공연·전시가 없습니다."}
+                {discountOnly ? '할인 중인 공연·전시가 없습니다.' : '주변 공연·전시가 없습니다.'}
               </p>
             )}
             <Pagination
@@ -100,13 +94,13 @@ export default function Home() {
               page={page}
               pageSize={PAGE_SIZE}
               onChange={(p) => {
-                setPage(p);
-                window.scrollTo(0, 0);
+                setPage(p)
+                window.scrollTo(0, 0)
               }}
             />
           </>
         )}
       </main>
     </div>
-  );
+  )
 }

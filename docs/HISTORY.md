@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-05-24 (배포 및 버그 수정)
+
+### Vercel 배포 + 라우팅 수정 + 타입 정리 + Detail 직접 접근 버그 수정
+
+- `vercel.json`: SPA 라우팅 설정 — `routes` + `handle:filesystem` 방식 적용
+- `vite.config.ts`: 존재하지 않는 PWA 아이콘 참조 제거
+- `.gitignore`: `memory/`, `docs/*.doc` 추가
+- `src/types/api.ts`: `EventBase` 베이스 인터페이스 도입, `CultureInfoItem`·`Event` extends 적용, `DiscountInfo`에 `Pick<TicketDiscountItem>` 적용, 미사용 `serviceName`·`area`(Event) 제거
+- `src/api/cultureInfo.ts`: `serviceName` 파싱 제거, `detail2` 이미지 필드 `imgUrl` 폴백 추가 (`thumbnail || imgUrl`)
+- `src/hooks/useEvents.ts`: Event 매핑에서 `area` 제거
+- `src/pages/Detail.tsx`: 직접 URL 접근 시 `fetchCultureInfoArea` 대신 `detail2` 응답만으로 Event 구성 (seq를 keyword로 검색하던 잘못된 로직 제거)
+- GitHub 저장소 생성 및 Vercel 연동 배포 완료
+
+---
+
 ## 2026-05-18 (무료 배지 + Detail 거리/소요시간)
 
 ### 무료 배지 (FreeBadge) + Detail 거리/소요시간 표시
