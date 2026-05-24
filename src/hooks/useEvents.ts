@@ -86,7 +86,6 @@ export function useEvents(keyword?: string) {
             startDate: toIsoDate(item.startDate),
             endDate: toIsoDate(item.endDate),
             realmName: item.realmName,
-            area: item.area,
             sigungu: item.sigungu,
             thumbnail: item.thumbnail,
             lat: venueLat,

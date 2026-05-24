@@ -4,7 +4,7 @@ import {
   MdArrowBack, MdCalendarToday, MdPlace, MdTheaters,
   MdOpenInNew, MdImageNotSupported, MdLocalOffer, MdDirectionsWalk,
 } from 'react-icons/md'
-import { fetchCultureInfoArea, fetchCultureInfoDetail } from '../api/cultureInfo'
+import { fetchCultureInfoDetail } from '../api/cultureInfo'
 import { fetchTicketDiscounts } from '../api/cultureTicket'
 import DiscountBadge from '../components/DiscountBadge'
 import FreeBadge from '../components/FreeBadge'
@@ -56,31 +56,28 @@ export default function Detail() {
             price: detail?.price ?? '',
           })
         } else {
-          const [detail, items, tickets] = await Promise.all([
+          const [detail, tickets] = await Promise.all([
             fetchCultureInfoDetail(id),
-            fetchCultureInfoArea({ keyword: id }),
             fetchTicketDiscounts(),
           ])
 
-          const matched = items.find((item) => item.seq === id)
-          if (!matched) { setNotFound(true); return }
+          if (!detail) { setNotFound(true); return }
 
-          const discount = findDiscount(matched.title, matched.place, tickets)
+          const discount = findDiscount(detail.title, detail.place, tickets)
           setEvent({
-            id: matched.seq,
-            title: matched.title,
-            place: matched.place,
-            startDate: toIsoDate(matched.startDate),
-            endDate: toIsoDate(matched.endDate),
-            realmName: matched.realmName,
-            area: matched.area,
-            sigungu: matched.sigungu,
-            thumbnail: matched.thumbnail,
-            lat: matched.gpsY ? parseFloat(matched.gpsY) : null,
-            lng: matched.gpsX ? parseFloat(matched.gpsX) : null,
+            id: detail.seq,
+            title: detail.title,
+            place: detail.place,
+            startDate: toIsoDate(detail.startDate),
+            endDate: toIsoDate(detail.endDate),
+            realmName: detail.realmName,
+            sigungu: detail.sigungu,
+            thumbnail: detail.thumbnail,
+            lat: detail.gpsY ? parseFloat(detail.gpsY) : null,
+            lng: detail.gpsX ? parseFloat(detail.gpsX) : null,
             distanceKm: null,
-            url: detail?.url ?? '',
-            price: detail?.price ?? '',
+            url: detail.url ?? '',
+            price: detail.price ?? '',
             discount: discount
               ? { discountRate: Number(discount.discountRate), price: discount.price, img: discount.img }
               : null,

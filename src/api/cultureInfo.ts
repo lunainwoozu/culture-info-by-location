@@ -15,7 +15,6 @@ function parseItems(xml: string): CultureInfoItem[] {
     const t = (tag: string) => decodeEntities(el.querySelector(tag)?.textContent ?? '')
     return {
       seq: t('seq'),
-      serviceName: t('serviceName'),
       title: t('title'),
       place: t('place'),
       startDate: t('startDate'),
@@ -23,7 +22,7 @@ function parseItems(xml: string): CultureInfoItem[] {
       realmName: t('realmName'),
       area: t('area'),
       sigungu: t('sigungu'),
-      thumbnail: t('thumbnail'),
+      thumbnail: t('thumbnail') || t('imgUrl'),
       gpsX: t('gpsX'),
       gpsY: t('gpsY'),
       url: t('url'),
