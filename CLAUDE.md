@@ -105,14 +105,14 @@ docs/
 | ----------------------------- | ------------------------------------------- | --------------------------------------------------------------- | ---------------------------------- |
 | `NEXT_PUBLIC_CULTURE_API_KEY` | 한국문화정보원 한눈에보는문화정보조회서비스 | `https://apis.data.go.kr/B553457/cultureinfo`                   | 공연·전시 리스트, 좌표             |
 |                               | 한국문화정보원 문화릴레이티켓 할인조회      | `https://apis.data.go.kr/B553457/nopenapi/rest/ticketdiscounts` | 할인 정보 매칭                     |
-| `HERITAGE_API_KEY`            | 국가유산청 국가유산검색 목록·상세           | `http://www.khs.go.kr/cha`                                      | 문화재 목록·상세 (서버에서만 사용) |
+| (키 불필요)                   | 국가유산청 국가유산검색 목록·상세·이미지    | `http://www.khs.go.kr/cha`                                      | 문화재 목록·상세·이미지 (서버에서만 사용) |
 
 **CORS**
 
 - 문화정보·할인티켓 API: `Access-Control-Allow-Origin: *` → 브라우저 직접 호출 가능, 프록시 불필요
 - 국가유산청 API: CORS 차단 + 클라이언트 직접 호출 불가 → **Vercel Serverless Function 프록시 경유 필수**
-  - 환경변수 `HERITAGE_API_KEY`는 서버 전용 (`NEXT_PUBLIC_` 접두사 없이 관리, 클라이언트에 노출되지 않음)
-  - 프론트에서는 `/api/heritage?...` 형태로 호출
+  - API 키 불필요 (실제 호출 테스트로 확인)
+  - 프론트에서는 `/api/heritage?type=list|detail|image&...` 형태로 호출
 
 #### 문화정보 API — `/area2` (지역별 목록)
 
@@ -149,7 +149,16 @@ docs/
 
 - 호출 방식: Vercel Serverless Function `/api/heritage` 경유
 - 필수 파라미터: `ccbaKdcd`, `ccbaAsno`, `ccbaCtcd`
-- 응답 필드: `ccbaMnm1`(문화재명), `ccbaKdcd`, `ccbaCtcd`, `longitude`, `latitude`, `content`(설명), `imageUrl`
+- 응답 필드: `ccbaMnm1`(문화재명), `ccbaKdcd`, `ccbaCtcd`, `longitude`, `latitude`, `content`(설명), `ccbaLcad`(주소)
+- `imageUrl` 필드 포함 — 상세 페이지 이미지는 이 값 사용 (별도 이미지 API 호출 불필요)
+
+#### 국가유산청 API — 이미지 (`/cha/SearchImageOpenapi.do`)
+
+- 호출 방식: Vercel Serverless Function `/api/heritage` 경유 (`type=image`)
+- 필수 파라미터: `ccbaKdcd`, `ccbaAsno`, `ccbaCtcd`
+- 선택 파라미터: `pageUnit=1&pageIndex=1` (첫 번째 이미지 1장만 요청)
+- 응답 필드: `imageUrl`
+- 사용 범위: **카드(목록·메인)에서만** 사용 — 목록 API에 이미지 없어 별도 호출 필요. 상세 페이지는 상세 API의 `imageUrl` 사용 (중복 호출 방지)
 
 ### 거리 계산
 
