@@ -28,7 +28,7 @@
 
 ## Out of Scope
 
-→ [`docs/PRD.md` — Section 7. Out of Scope](./docs/PRD.md) 참조.
+→ [`docs/PRD.md` — Section 9. Out of Scope](./docs/PRD.md) 참조.
 
 ## Commands
 
@@ -42,8 +42,8 @@ npm run dev
 # 빌드
 npm run build
 
-# 빌드 결과 미리보기
-npm run preview
+# 프로덕션 서버 실행 (빌드 후)
+npm start
 
 # 린트
 npm run lint
@@ -51,28 +51,29 @@ npm run lint
 
 ## Tech Stack
 
-- **빌드 도구**: Vite
-- **UI 프레임워크**: React 19
+- **프레임워크**: Next.js 16 (App Router, Turbopack)
+- **UI 라이브러리**: React 19
 - **언어**: TypeScript (TSX)
 - **스타일링**: TailwindCSS v4
-- **라우팅**: React Router DOM v7 (`createBrowserRouter` Data API 방식)
 - **상태 관리**: Zustand (전역 상태, props drilling 최소화)
+- **데이터베이스**: Supabase (PostgreSQL 호스팅 + Auth)
+- **폼 검증**: Zod
 - **아이콘**: React Icons
-- **배포**: Vercel + PWA (vite-plugin-pwa)
-- **아키텍처**: 컴포넌트 기반 SPA — 페이지(pages)와 공통 컴포넌트(components) 분리, 비즈니스 로직은 custom hook으로 분리
+- **배포**: Vercel
+- **아키텍처**: App Router 기반 — `app/` 라우트 단위 페이지, `components/` 공통 컴포넌트, 비즈니스 로직은 custom hook으로 분리
 
 ```
 src/
-├── api/          # 공공 API 호출 함수 (한눈에보는문화정보, 문화릴레이티켓)
+├── api/          # 공공 API 호출 함수 (한눈에보는문화정보, 문화릴레이티켓, 문화재)
+├── app/          # Next.js App Router 라우트 (page.tsx, layout.tsx 등)
 ├── components/   # 재사용 공통 컴포넌트 (EventCard, DiscountBadge 등)
 ├── hooks/        # custom hook (useGeolocation, useEvents 등)
-├── pages/        # 라우트 단위 페이지 (Home, Detail)
-├── store/        # Zustand 스토어 (filterStore 등)
+├── store/        # Zustand 스토어 (filterStore, authStore 등)
 ├── types/        # 공통 타입 정의 (API 응답 타입 포함)
 └── utils/        # 유틸 함수 (distance.ts 등)
 
 docs/
-├── PRD.md        # 제품 요구사항 정의서
+├── PRD.md        # 제품 요구사항 정의서 (개발 현황 포함)
 ├── WORK.md       # 현재 작업 현황
 └── HISTORY.md    # 완료된 작업 기록
 ```
@@ -93,18 +94,25 @@ docs/
 
 ### API 연동 규칙
 
-- 공공 API 키는 `.env.local`에서 관리 (`VITE_` 접두사)
+- 브라우저 직접 호출 API 키: `.env.local`에서 `NEXT_PUBLIC_` 접두사로 관리
+- 서버 전용 API 키(예: `HERITAGE_API_KEY`): `NEXT_PUBLIC_` 접두사 없이 관리 — 클라이언트에 노출되지 않음
 - API 응답 타입은 `src/types/`에 별도 정의
 - 에러 처리 필수, 로딩·에러 상태 항상 UI에 반영
 
 ### API 연동 상세
 
-| 환경변수               | API                                         | Base URL                                                        | 역할                   |
-| ---------------------- | ------------------------------------------- | --------------------------------------------------------------- | ---------------------- |
-| `VITE_CULTURE_API_KEY` | 한국문화정보원 한눈에보는문화정보조회서비스 | `https://apis.data.go.kr/B553457/cultureinfo`                   | 공연·전시 리스트, 좌표 |
-|                        | 한국문화정보원 문화릴레이티켓 할인조회      | `https://apis.data.go.kr/B553457/nopenapi/rest/ticketdiscounts` | 할인 정보 매칭         |
+| 환경변수                      | API                                         | Base URL                                                        | 역할                               |
+| ----------------------------- | ------------------------------------------- | --------------------------------------------------------------- | ---------------------------------- |
+| `NEXT_PUBLIC_CULTURE_API_KEY` | 한국문화정보원 한눈에보는문화정보조회서비스 | `https://apis.data.go.kr/B553457/cultureinfo`                   | 공연·전시 리스트, 좌표             |
+|                               | 한국문화정보원 문화릴레이티켓 할인조회      | `https://apis.data.go.kr/B553457/nopenapi/rest/ticketdiscounts` | 할인 정보 매칭                     |
+| `HERITAGE_API_KEY`            | 국가유산청 국가유산검색 목록·상세           | `http://www.khs.go.kr/cha`                                      | 문화재 목록·상세 (서버에서만 사용) |
 
-**CORS**: 두 API 모두 `Access-Control-Allow-Origin: *` → 브라우저 직접 호출 가능, 프록시 불필요
+**CORS**
+
+- 문화정보·할인티켓 API: `Access-Control-Allow-Origin: *` → 브라우저 직접 호출 가능, 프록시 불필요
+- 국가유산청 API: CORS 차단 + 클라이언트 직접 호출 불가 → **Vercel Serverless Function 프록시 경유 필수**
+  - 환경변수 `HERITAGE_API_KEY`는 서버 전용 (`NEXT_PUBLIC_` 접두사 없이 관리, 클라이언트에 노출되지 않음)
+  - 프론트에서는 `/api/heritage?...` 형태로 호출
 
 #### 문화정보 API — `/area2` (지역별 목록)
 
@@ -130,12 +138,47 @@ docs/
 
 - 두 API 데이터는 **공연명(`title`) 또는 공연장명(`place`) 기준**으로 매칭하여 할인 뱃지 표시
 
+#### 국가유산청 API — 목록 (`/cha/SearchKindOpenapiList.do`)
+
+- 호출 방식: Vercel Serverless Function `/api/heritage` 경유
+- 요청 파라미터: `ccbaCtcd`(시도코드, 서울=11), `pageUnit`, `pageIndex`
+- 응답 형식: XML → 프록시에서 JSON으로 변환 후 반환
+- 응답 필드: `ccbaMnm1`(문화재명), `ccbaKdcd`(종목코드), `ccbaAsno`(관리번호), `ccbaCtcd`(시도코드), `longitude`(경도), `latitude`(위도)
+
+#### 국가유산청 API — 상세 (`/cha/SearchKindOpenapiDt.do`)
+
+- 호출 방식: Vercel Serverless Function `/api/heritage` 경유
+- 필수 파라미터: `ccbaKdcd`, `ccbaAsno`, `ccbaCtcd`
+- 응답 필드: `ccbaMnm1`(문화재명), `ccbaKdcd`, `ccbaCtcd`, `longitude`, `latitude`, `content`(설명), `imageUrl`
+
 ### 거리 계산
 
 - `src/utils/distance.ts` — Haversine 공식 사용
 - 위치 수집: `navigator.geolocation.getCurrentPosition`
 - 위치 기반 바운딩 박스 계산 후 `gpsxfrom`/`gpsxto`/`gpsyfrom`/`gpsyto` 파라미터로 API 호출
 - 권한 거부 또는 수집 실패 시 에러 상태 처리 필수
+
+## 기술적 결정 이력
+
+### 문화재 연동 — 초기 제외 후 재도입
+
+**초기 제외 이유**
+
+- 국가유산청 API가 "클라이언트 직접 호출 불가"로 CORS 차단
+- 응답이 XML 전용이며, 위치정보 API는 GIS 전용(WMS/WFS) 방식으로 일반 REST와 다름
+- 초기 MVP 일정상 백엔드 구축 공수가 부담스러워 제외
+
+**지오코딩은 제외 이유가 아님**
+
+- `DOMParser`로 XML 파싱은 30분 이내
+- 지오코딩(주소→좌표 변환)은 공연 API 좌표 필드 유무 확인 과정에서 언급됐으나, 공연 API에 좌표(`gpsxfrom`/`gpsyfrom`)가 있음이 확인되어 불필요해짐
+- 문화재 API는 `longitude`/`latitude` 필드를 직접 제공하므로 지오코딩 자체가 필요 없음
+
+**재도입 결정**
+
+- 프로젝트 일정에 여유가 생김
+- "오늘 하루 문화 일정" 콘셉트에 문화재가 포함되는 게 기획 의도에 맞음
+- Vercel Serverless Function으로 프록시 구성 시 CORS 문제 해결 가능, 별도 서버 불필요
 
 ## 개발 순서 (기능 단위)
 
@@ -203,9 +246,8 @@ docs/
 
 ## 문서 파일 역할
 
-| 파일              | 역할                                                              |
-| ----------------- | ----------------------------------------------------------------- |
+| 파일              | 역할                                                                         |
+| ----------------- | ---------------------------------------------------------------------------- |
 | `docs/PRD.md`     | 제품 요구사항 정의서 — 목표, 유저 스토리, 기능 명세, 개발 현황, Out of Scope |
-| `docs/WORK.md`    | 현재 작업 현황 및 앞으로 할 일                                    |
-| `docs/HISTORY.md` | 완료된 작업 기록                                                  |
-
+| `docs/WORK.md`    | 현재 작업 현황 및 앞으로 할 일                                               |
+| `docs/HISTORY.md` | 완료된 작업 기록                                                             |
