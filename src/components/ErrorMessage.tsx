@@ -1,3 +1,5 @@
+'use client'
+
 interface Props {
   message: string
   onRetry?: () => void

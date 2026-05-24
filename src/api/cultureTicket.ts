@@ -1,7 +1,7 @@
 import type { TicketDiscountItem } from '../types/api'
 
 const BASE = 'https://apis.data.go.kr/B553457/nopenapi/rest/ticketdiscounts'
-const KEY = import.meta.env.VITE_CULTURE_API_KEY as string
+const KEY = process.env.NEXT_PUBLIC_CULTURE_API_KEY as string
 
 function parseItems(xml: string): TicketDiscountItem[] {
   const doc = new DOMParser().parseFromString(xml, 'application/xml')

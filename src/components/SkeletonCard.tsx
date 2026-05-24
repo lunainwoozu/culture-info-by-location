@@ -1,3 +1,5 @@
+'use client'
+
 export default function SkeletonCard() {
   return (
     <div className="flex gap-3 rounded-xl border border-gray-100 bg-white p-3 animate-pulse">
